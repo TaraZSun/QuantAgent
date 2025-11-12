@@ -1,44 +1,53 @@
+# create 10 features for trial, more can be added later
 import pandas as pd
 import pandas_ta as ta
 
 import pathlib
-import const
+INPUTDATA_DIR = pathlib.Path("./data/clean/price_daily_parquet")
+ 
+def compute_features_10(df: pd.DataFrame) ->pd.DataFrame:
+    data = df.copy()
+    data["Date"] = pd.to_datetime(data["Date"])
+    data = data.sort_values(["Ticker","Date"]).reset_index(drop=True)
 
-def create_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Create technical indicator features for the given DataFrame.
+    def _one(group: pd.DataFrame) ->pd.DataFrame:
+        o=group["Open"]
+        h=group["High"]
+        l=group["Low"]
+        c=group["Close"]
+        v=group["Volume"]
 
-    Parameters:
-    df (pd.DataFrame): Input DataFrame with OHLCV data.
+        out = pd.DataFrame(index=group.index)
 
-    Returns:
-    pd.DataFrame: DataFrame with added technical indicator features.
-    """
-    # Ensure the DataFrame has the required columns
-    required_columns = ['open', 'high', 'low', 'close', 'volume']
-    for col in required_columns:
-        if col not in df.columns:
-            raise ValueError(f"DataFrame must contain '{col}' column.")
+        # 10 indicators
+        out=out.join(ta.sma(c, length=20).to_frame("feat_sma_20"), how="outer")
+        out = out.join(ta.sma(c, length=50).to_frame(name="feat_sma50"), how="outer")
+        out = out.join(ta.ema(c, length=20).to_frame(name="feat_ema20"), how="outer")
+        out = out.join(ta.rsi(c, length=14).to_frame(name="feat_rsi14"), how="outer")
+        out = out.join(ta.macd(c, fast=12, slow=26, signal=9).add_prefix("feat_macd_"), how="outer")
+        out = out.join(ta.atr(h, l, c, length=14).to_frame(name="feat_atr14"), how="outer")
+        out = out.join(ta.bbands(c, length=20).add_prefix("feat_bb20_"), how="outer")
+        out = out.join(ta.adx(h, l, c, length=14).add_prefix("feat_adx14_"), how="outer")
+        out = out.join(ta.mfi(h, l, c, v, length=14).to_frame(name="feat_mfi14"), how="outer")
+        out = out.join(ta.obv(c, v).to_frame(name="feat_obv"), how="outer")
 
-    # Iterate over the indicators defined in const.INDICATORS
-    for indicator, params in const.INDICATORS:
-        try:
-            # Dynamically get the function from pandas_ta
-            ta_function = getattr(ta, indicator)
-            # Calculate the indicator and add it to the DataFrame
-            indicator_values = ta_function(
-                high=df['high'],
-                low=df['low'],
-                close=df['close'],
-                volume=df['volume'],
-                **params
-            )
-            # If the result is a DataFrame (multiple columns), concatenate it
-            if isinstance(indicator_values, pd.DataFrame):
-                df = pd.concat([df, indicator_values], axis=1)
-            else:
-                df[indicator] = indicator_values
-        except Exception as e:
-            print(f"Error calculating {indicator} with params {params}: {e}")
+        out = out.shift(1)  # avoid lookahead bias
+        return pd.concat([group.reset_index(drop=True), out.reset_index(drop=True)], axis=1)
+    return  data.groupby("Ticker", group_keys=False).apply(_one, include_groups=False)
 
-    return df
+def create_features_for_all_companies(input_dir:pathlib.Path)->None:
+    output_dir = input_dir.parent / "features_10"
+    output_dir.mkdir(exist_ok=True)
+    for file in input_dir.glob("*.parquet"):
+        df = pd.read_parquet(file)
+        df_feat = compute_features_10(df)
+        print(df_feat.head())
+        output_file = output_dir / file.name
+        df_feat.to_parquet(output_file)
+
+def main():
+    input_dir = pathlib.Path(INPUTDATA_DIR)
+    create_features_for_all_companies(input_dir)
+
+if __name__ == "__main__":
+    main()

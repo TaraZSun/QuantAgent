@@ -7,3 +7,5 @@ requests
 tabulate
 pyarrow
 pandas_ta
+pydantic
+python-dotenv
