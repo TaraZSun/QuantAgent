@@ -1,0 +1,22 @@
+cat > .gitignore <<'EOF'
+# venv / caches
+.venv/
+__pycache__/
+*.pyc
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Data & artifacts (keep code small)
+data/
+*.csv
+*.parquet
+*.pkl
+*.ipynb_checkpoints/
+
+# Logs
+logs/
+*.log
+EOF
