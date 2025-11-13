@@ -6,6 +6,7 @@ import pandas as pd
 import pathlib
 from pyarrow import Table
 from const import PARQUET_INPUT_DIR as INPUT_DIR,PARQUET_OUTPUT_DIR as OUTPUT_DIR
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

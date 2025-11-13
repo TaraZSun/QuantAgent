@@ -1,5 +1,5 @@
 # models.py
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from pydantic import BaseModel, Field, HttpUrl, field_validator
 from typing import Optional
 
@@ -17,7 +17,7 @@ class EntityNewsRaw(BaseModel):
     @field_validator("published_at_utc")
     @classmethod
     def must_be_utc(cls, v: datetime):
-        if not (v.tzinfo and v.utcoffset() == 0):
+        if v.tzinfo is None or v.utcoffset() != timedelta(0):
             raise ValueError("published_at_utc must be timezone-aware UTC")
         return v
 
