@@ -10,8 +10,14 @@ import pathlib
 import pandas as pd
 from src.const import START_DATE, END_DATE, MAX_RETRIES, TIMEOUT, TICKERS_FILE_PATH, TICKERS_OUTPUT_PATH
 from src.process_data.unstructure_data.models import EntityNewsRaw
+import logging
 from dotenv import load_dotenv
 load_dotenv()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 ALPACA_NEWS_API_URL  = os.getenv("ALPACA_NEWS_API_URL")
 ALPACA_API_KEY = os.getenv("APCA_API_KEY_ID") or os.getenv("ALPACA_API_KEY")
@@ -108,6 +114,7 @@ def save_news_for_tickers(tickers_file_path: pathlib.Path) -> None:
     for ticker in tickers:
         news_items = get_news_for_ticker(ticker)
         save_news_for_ticker(news_items, ticker, output_dir)
+        logger.info(f"Saved news for ticker {ticker} with {len(news_items)} items.")
 
 def main():
     tickers_file = pathlib.Path(TICKERS_FILE_PATH)

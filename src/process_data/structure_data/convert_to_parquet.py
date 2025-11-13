@@ -1,13 +1,17 @@
-"""Convert CSV stock data files into Parquet format, creating separate Parquet files for each stock ticker."""
+"""Convert CSV stock data files into Parquet format, creating separate Parquet files 
+for each stock ticker. The result are 10 parquet files, one for each ticker in the input CSV files."""
 import os
 import pyarrow.parquet as pq
 import logging
 import pandas as pd
 import pathlib
 from pyarrow import Table
-from const import PARQUET_INPUT_DIR as INPUT_DIR,PARQUET_OUTPUT_DIR as OUTPUT_DIR
+from src.const import PARQUET_INPUT_DIR as INPUT_DIR,PARQUET_OUTPUT_DIR as OUTPUT_DIR
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 def convert_a_csv_to_parquet(csv_path: pathlib.Path, output_parquet: pathlib.Path) -> None:

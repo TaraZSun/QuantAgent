@@ -1,10 +1,15 @@
 # create 10 features for trial, more can be added later
 import pandas as pd
 import pandas_ta as ta
-
+from src.const import FEATURES_INPUT_DIR
 import pathlib
-INPUTDATA_DIR = pathlib.Path("./data/clean/price_daily_parquet")
- 
+import logging
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 def compute_features_10(df: pd.DataFrame) ->pd.DataFrame:
     data = df.copy()
     data["Date"] = pd.to_datetime(data["Date"])
@@ -41,13 +46,15 @@ def create_features_for_all_companies(input_dir:pathlib.Path)->None:
     for file in input_dir.glob("*.parquet"):
         df = pd.read_parquet(file)
         df_feat = compute_features_10(df)
-        print(df_feat.head())
         output_file = output_dir / file.name
         df_feat.to_parquet(output_file)
+    logger.info("Features creation completed.")
 
 def main():
-    input_dir = pathlib.Path(INPUTDATA_DIR)
+    input_dir = pathlib.Path(FEATURES_INPUT_DIR)
+    print(input_dir)
     create_features_for_all_companies(input_dir)
+    
 
 if __name__ == "__main__":
     main()

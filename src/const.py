@@ -11,6 +11,10 @@ OUTPUT_DIR = "data/price_daily"
 PARQUET_OUTPUT_DIR = "data/clean/price_daily_parquet"
 PARQUET_INPUT_DIR = "data/price_daily"
 
+# features.py
+FEATURES_OUTPUT_DIR = "data/features_10"
+FEATURES_INPUT_DIR = "data/clean/price_daily_parquet"
+
 # fetch_alpaca_news.py
 START_DATE = "2010-01-01"
 END_DATE = "2023-12-31"

@@ -1,12 +1,21 @@
-# Script to fetch 10 companies historical stock data within NASDAQ-100 using yfinance and save to CSV files.
+"""Script to fetch 10 companies historical stock data within NASDAQ-100 using yfinance 
+    and save to CSV files.
+result looks like:
+Date,Ticker,Open,High,Low,Close,AdjClose,Volume,Dividends,StockSplits
+2010-01-04,AAPL,30.49,30.64,30.34,30.57,27.727419,123432400,0.0,0.0
+"""
+
 import os
 import pandas
 import yfinance 
 import pathlib
 import logging
 
-from const import CSV_FILE, START_DATE, END_DATE, OUTPUT_DIR
-
+from src.const import CSV_FILE, START_DATE, END_DATE, OUTPUT_DIR
+logging.basicConfig(
+    level=logging.INFO,  
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 def fetch_raw_data(csv_file: pathlib.Path) -> pandas.DataFrame:
@@ -61,15 +70,15 @@ def save_data_to_csv(df: pandas.DataFrame, output_dir: pathlib.Path)-> None:
         df_ticker = df[df["Ticker"] == ticker]
         output_file = output_dir / f"{ticker}_{START_DATE}_{END_DATE}.csv"
         df_ticker.to_csv(output_file, index=False)
-        logger.info(f"[saved] {output_file}  rows={len(df_ticker)}")
+       
 
 def main():
     csv_path = pathlib.Path(CSV_FILE)
     output_path = pathlib.Path(OUTPUT_DIR)
-
     raw_data = fetch_raw_data(csv_path)
     converted_data = convert_raw_data(raw_data)
     save_data_to_csv(converted_data, output_path)
+    logger.info(f"Data saved to {output_path}")
 
 
 if __name__ == "__main__":
